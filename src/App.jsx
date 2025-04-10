@@ -1,35 +1,55 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import PropTypes from 'prop-types';
+import React from 'react';
+import axios from 'axios';
+import Movie from './Movie';
+import "./App.css";
 
-function App() {
-  const [count, setCount] = useState(0)
+class App extends React.Component {
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+  state = {
+    isLoading: true,
+    movies: [],
+  }
+
+  getMovies = async () => {
+    const {
+      data: {
+        data: { movies },
+      }
+    } = await axios.get('https://yts.mx/api/v2/list_movies.json?sort_by=rating');
+    this.setState({ movies, isLoading: false })
+  }
+
+  componentDidMount() {
+    this.getMovies();
+  }
+
+  render() {
+    const {isLoading, movies} = this.state;
+    return (
+      <section className="container">
+      {isLoading ? ( 
+        <div className="loader">
+          <span className="loader_text">Загрузка...</span>
+        </div>
+      ): (
+        <div className="movies">
+        {movies.map((movie) => (
+            <Movie 
+              key={movie.id}
+              id={movie.id} 
+              year={movie.year} 
+              title={movie.title} 
+              summary={movie.summary} 
+              poster={movie.medium_cover_image}
+              genres={movie.genres}
+            />
+        ))}
+        </div>
+      )}
+    </section>
+    );
+  }
 }
 
 export default App
